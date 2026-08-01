@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>极地风暴 · 北极熊大冒险</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="app">
+  <canvas id="game-canvas"></canvas>
+  <div id="vignette"></div>
+  <div id="fx-layer"></div>
+
+  <!-- ===== HUD ===== -->
+  <div id="hud" class="hidden">
+    <div id="player-panel">
+      <div id="lv-badge">Lv.1</div>
+      <div class="bar-wrap"><div id="hp-bar" class="bar hp"><span></span></div><div class="bar-text" id="hp-text">100/100</div></div>
+      <div class="bar-wrap"><div id="ep-bar" class="bar ep"><span></span></div><div class="bar-text" id="ep-text">100</div></div>
+      <div class="bar-wrap xp"><div id="xp-bar" class="bar xp"><span></span></div><div class="bar-text" id="xp-text">0/45</div></div>
+    </div>
+    <div id="boss-panel" class="hidden">
+      <div class="boss-name" id="boss-name">企鹅王</div>
+      <div class="bar-wrap"><div id="boss-bar" class="bar boss"><span></span></div></div>
+    </div>
+    <div id="wave-panel">
+      <div id="wave-title">第 1 关</div>
+      <div id="wave-info">即将来袭…</div>
+      <div id="enemy-count">敌方 0</div>
+    </div>
+    <div id="combo-wrap" class="hidden"><span id="combo-num">x3</span><span id="combo-label">连击</span></div>
+    <div id="skill-bar"></div>
+    <div id="msg-center"></div>
+    <div id="weather-tag" class="hidden">暴风雪来袭！</div>
+    <canvas id="radar" width="168" height="168"></canvas>
+    <svg id="crosshair" viewBox="0 0 32 32" aria-hidden="true">
+      <g stroke="rgba(255,255,255,0.65)" stroke-width="3.4" stroke-linecap="square">
+        <line x1="16" y1="2" x2="16" y2="10"/>
+        <line x1="16" y1="22" x2="16" y2="30"/>
+        <line x1="2" y1="16" x2="10" y2="16"/>
+        <line x1="22" y1="16" x2="30" y2="16"/>
+      </g>
+      <g stroke="#0b0b0d" stroke-width="2" stroke-linecap="square">
+        <line x1="16" y1="2" x2="16" y2="10"/>
+        <line x1="16" y1="22" x2="16" y2="30"/>
+        <line x1="2" y1="16" x2="10" y2="16"/>
+        <line x1="22" y1="16" x2="30" y2="16"/>
+      </g>
+    </svg>
+    <div id="state-msg"></div>
+  </div>
+
+  <!-- ===== 主菜单 ===== -->
+  <div id="menu" class="screen">
+    <div class="menu-inner">
+      <h1 class="title">极地风暴</h1>
+      <p class="subtitle">POLAR STORM · 北极熊的南极远征</p>
+      <div class="menu-buttons">
+        <button id="btn-start" class="btn primary">开始远征</button>
+        <button id="btn-help" class="btn">操作说明</button>
+        <button id="btn-sound" class="btn">音效：开</button>
+        <button id="btn-credit" class="btn">故事背景</button>
+        <button id="btn-reset-save" class="btn ghost">重置进度</button>
+      </div>
+      <div class="menu-tip">建议使用 Chrome / Edge 浏览器 · 双击即可运行</div>
+    </div>
+  </div>
+
+  <!-- ===== 关卡地图 ===== -->
+  <div id="level-select" class="screen hidden">
+    <div class="map-header">
+      <button id="btn-map-back" class="btn small">返回</button>
+      <div class="map-title">南极作战地图</div>
+      <div class="map-stats" id="map-stats"></div>
+    </div>
+    <div id="map-path"></div>
+  </div>
+
+  <!-- ===== 战前简报 ===== -->
+  <div id="briefing" class="screen hidden">
+    <div class="brief-inner">
+      <h2 id="brief-title">第 1 关 · 初入冰原</h2>
+      <p id="brief-desc"></p>
+      <div id="brief-enemies"></div>
+      <div id="brief-tips" class="tips"></div>
+      <button id="btn-fight" class="btn primary big">开始战斗</button>
+    </div>
+  </div>
+
+  <!-- ===== 技能升级 ===== -->
+  <div id="upgrade" class="screen hidden">
+    <div class="upgrade-inner">
+      <h2>战功结算</h2>
+      <p id="upgrade-points">可用技能点：2</p>
+      <div id="upgrade-list"></div>
+      <button id="btn-upgrade-done" class="btn primary big">继续</button>
+    </div>
+  </div>
+
+  <!-- ===== 结算 ===== -->
+  <div id="result" class="screen hidden">
+    <div class="result-inner">
+      <h2 id="result-title">胜利！</h2>
+      <div id="result-stars" class="stars"></div>
+      <div id="result-body"></div>
+      <div class="result-buttons">
+        <button id="btn-result-retry" class="btn">再战一次</button>
+        <button id="btn-result-map" class="btn">返回地图</button>
+        <button id="btn-result-next" class="btn primary">下一关</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 暂停 ===== -->
+  <div id="pause" class="screen hidden">
+    <div class="pause-inner">
+      <h2>游戏暂停</h2>
+      <div class="pause-row"><span>鼠标灵敏度</span><input id="sens-slider" type="range" min="20" max="150" value="150"></div>
+      <div class="pause-row"><span>音量</span><input id="vol-slider" type="range" min="0" max="100" value="100"></div>
+      <button id="btn-resume" class="btn primary">继续游戏</button>
+      <button id="btn-restart" class="btn">重新挑战</button>
+      <button id="btn-exit" class="btn">返回地图</button>
+      <button id="btn-quit-menu" class="btn ghost">回到主菜单</button>
+      <div class="pause-hint">战斗中按 Esc 会同时暂停并显示鼠标；点击「继续游戏」后再次点击画面可锁定鼠标。<br>浏览器弹出的「按 Esc 显示光标」提示属正常现象，按 Esc 即回到本菜单。</div>
+    </div>
+  </div>
+
+  <!-- ===== 帮助 ===== -->
+  <div id="help" class="screen hidden">
+    <div class="help-inner">
+      <h2>操作说明</h2>
+      <div class="help-grid">
+        <div><b>W A S D</b> 移动</div>
+        <div><b>鼠标</b> 视角</div>
+        <div><b>左键</b> 利爪连击</div>
+        <div><b>空格</b> 跳跃</div>
+        <div><b>Shift</b> 冲刺</div>
+        <div><b>1-5</b> 技能</div>
+        <div><b>V</b> 切换视角</div>
+        <div><b>Esc</b> 暂停</div>
+      </div>
+      <p class="tips">提示：连击会提升伤害；企鹅攻击前会有红圈提示，及时翻滚（冲刺）躲避。掉落的小鱼可以回血，金色小鱼提供强化。</p>
+      <button id="btn-help-back" class="btn primary">返回</button>
+    </div>
+  </div>
+
+  <!-- ===== 故事 ===== -->
+  <div id="credit" class="screen hidden">
+    <div class="help-inner">
+      <h2>故事背景</h2>
+      <p>一场神秘的冰川漂流将南极企鹅军团带到了失控的边缘——它们占领了冰原，驱逐了所有原住民。作为北极最后的守护者，你被北极理事会空投至南极大陆，肩负起"以一敌万"的使命。</p>
+      <p>翻越 15 道战线：从懵懂的企鹅幼崽，到钢铁装甲、深海刺客、寒冰法师，最终直面传说中的<b>企鹅王</b>。</p>
+      <p>记住：北极熊从不退缩。</p>
+      <button id="btn-credit-back" class="btn primary">返回</button>
+    </div>
+  </div>
+
+  <!-- ===== 触屏控制 ===== -->
+  <div id="touch-ui" class="hidden">
+    <div id="joy-zone"><div id="joy-base"><div id="joy-knob"></div></div></div>
+    <div id="touch-btns">
+      <button class="tbtn" id="t-attack">爪</button>
+      <button class="tbtn" id="t-dash">冲</button>
+      <button class="tbtn" id="t-jump">跳</button>
+      <button class="tbtn small" id="t-s1">1</button>
+      <button class="tbtn small" id="t-s2">2</button>
+      <button class="tbtn small" id="t-s3">3</button>
+      <button class="tbtn small" id="t-s4">4</button>
+      <button class="tbtn small" id="t-s5">5</button>
+    </div>
+  </div>
+
+  <div id="loading"><div class="loading-box"><div class="spinner"></div><div>正在搭建南极大陆…</div></div></div>
+</div>
+
+<script src="lib/three.min.js"></script>
+<script src="lib/RoomEnvironment.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/models.js"></script>
+<script src="js/game.js"></script>
+<script src="js/ui.js"></script>
+</body>
+</html>

@@ -1,0 +1,18 @@
+# 密钥和环境变量
+.env
+*.env
+
+tools/
+
+# 测试文件（帮你拦截那个冒烟测试）
+test_*.py
+*_test.py
+
+# 编辑器配置
+.vscode/
+.idea/
+*.log
+
+# 系统文件
+.DS_Store
+Thumbs.db
