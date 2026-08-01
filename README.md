@@ -61,19 +61,6 @@ python -m http.server 8080
 | 13 | 极夜暗杀 | 🌑 极夜刺客 | 潜行背刺 |
 | 14 | 远古守卫 | 🧊 远古冰封守卫 | 护甲再生 + 冰雹 |
 | 15 | 企鹅王座 | 👑 企鹅王 | 多阶段 Boss |
-
-## 目录结构
-
-```
-index.html          页面入口（双击运行）
-style.css           界面样式
-lib/three.min.js    Three.js r128（本地化）
-lib/RoomEnvironment.js  环境反射贴图生成器
-js/audio.js         程序化音效引擎（WebAudio 合成）
-js/models.js        3D 模型：北极熊、15 种企鹅、南极地形、冰雪特效
-js/game.js          游戏主逻辑：战斗、AI、15 关配置、成长系统
-js/ui.js            界面：菜单、HUD、地图、升级、结算、触屏
-tools/              （开发用）无头浏览器冒烟测试与截图脚本
 ```
 
 ## 技术亮点
@@ -91,10 +78,3 @@ tools/              （开发用）无头浏览器冒烟测试与截图脚本
 - **页面黑屏 / 只有文字**：浏览器未开启 WebGL，请检查硬件加速设置。
 - **想重开进度**：主菜单点击「重置进度」；或开发者工具 → Application → Local Storage → 删除 `polar_storm_save_v1`。
 - **画面卡顿**：可调低 `js/models.js` 中地形 `SEG`（第 620 行附近）或关闭阴影。
-
-## 临时测试模式
-
-- **全部关卡开放**：`js/game.js` 顶部 `ALL_LEVELS_OPEN = true`，当前 15 关全部可玩（雪崩技能同步解锁）；改回 `false` 恢复按通关进度解锁。
-- **企鹅攻击力倍率**：基础倍率 `ENEMY_ATK_MULT = 2.5`，普通关再降 50%（`ATK_DMG_NORMAL = 0.5`），Boss 关再降 60%（`ATK_DMG_BOSS = 0.4`），可自行调整。
-- **企鹅攻击性**：企鹅移动速度 +8%、攻击速度 +30%（冷却/前摇 ×0.7，`ATK_SPEED_FACTOR`）、弹道速度 +30%、贴脸距离更近、Boss 技能间隔缩短。
-- **企鹅攻击概率**：攻击意图触发概率降低 30%（`ATK_CHANCE = 0.7`），攻击更快但更不密集。
